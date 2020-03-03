@@ -146,5 +146,16 @@ public class GameLayout {
                 availableWidth - shopCardHeight, shopCardHeight);
     }
 
+    public void update(Undoer undo) {
+        float undoSize = undo.undoButton.getHeight() * 0.7f;
+        final Rectangle area = new Rectangle(
+                marginWidth, pieceHolderHeight + boardHeight,
+                availableWidth, undoSize);
+
+        undo.undoArea.set(
+                area.x + area.width - undoSize, area.y,
+                undoSize, undoSize);
+    }
+
     //endregion
 }

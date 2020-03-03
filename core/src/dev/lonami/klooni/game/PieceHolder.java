@@ -40,14 +40,14 @@ public class PieceHolder implements BinSerializable {
     //region Members
 
     final Rectangle area;
-    private final Piece[] pieces;
+    public final Piece[] pieces;
 
     private final Sound pieceDropSound;
     private final Sound invalidPieceDropSound;
     private final Sound takePiecesSound;
 
     // Count of pieces to be shown
-    private final int count;
+    public final int count;
 
     // Currently held piece index (picked by the user)
     private int heldPiece;

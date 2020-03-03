@@ -36,7 +36,7 @@ public class Cell implements BinSerializable {
     //region Members
 
     // Negative index indicates that the cell is empty
-    private int colorIndex;
+    public int colorIndex;
 
     public final Vector2 pos;
     public final float size;
