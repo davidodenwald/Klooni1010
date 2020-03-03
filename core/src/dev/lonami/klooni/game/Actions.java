@@ -16,7 +16,8 @@ import dev.lonami.klooni.SkinLoader;
 import dev.lonami.klooni.serializer.BinSerializable;
 
 // Undoer can undo the last move from the current hand.
-public class Undoer implements BinSerializable {
+public class Actions implements BinSerializable {
+    public enum Action {None, Undo, Pause}
 
     private Board board;
     private PieceHolder pieceHolder;
@@ -24,20 +25,28 @@ public class Undoer implements BinSerializable {
 
     private Stack<State> states;
 
-    final Texture undoButton;
     final Rectangle undoArea;
-    private Color undoColor;
+    final Texture undoButton;
+    private final Color undoColor;
 
-    public Undoer(GameLayout layout, Board board, PieceHolder pieceHolder, BaseScorer scorer) {
+    final Rectangle pauseArea;
+    private final Texture pauseButton;
+    private final Color pauseColor;
+
+    public Actions(GameLayout layout, Board board, PieceHolder pieceHolder, BaseScorer scorer) {
         this.board = board;
         this.pieceHolder = pieceHolder;
         this.scorer = scorer;
 
         states = new Stack<State>();
 
-        undoButton = SkinLoader.loadPng("undo.png");
-        undoColor = Klooni.theme.bandColor.cpy();
         undoArea = new Rectangle();
+        undoButton = SkinLoader.loadPng("undo.png");
+        undoColor = Klooni.theme.highScore.cpy();
+
+        pauseArea = new Rectangle();
+        pauseButton = SkinLoader.loadPng("pause.png");
+        pauseColor = Klooni.theme.currentScore.cpy();
 
         layout.update(this);
     }
@@ -52,6 +61,8 @@ public class Undoer implements BinSerializable {
         if (canUndo()) {
             batch.draw(undoButton, undoArea.x, undoArea.y, undoArea.width, undoArea.height);
         }
+        batch.setColor(pauseColor);
+        batch.draw(pauseButton, pauseArea.x, pauseArea.y, pauseArea.width, pauseArea.height);
     }
 
     // Records the game state (score, board-cells, pieceholder-items).
@@ -86,7 +97,7 @@ public class Undoer implements BinSerializable {
 
     // Undo the last move if the undo icon was pressed.
     // returns true if the undo icon was pressed; false otherwise.
-    public boolean onPress() {
+    public Action onPress() {
         int x = Gdx.input.getX();
         int y = Gdx.graphics.getHeight() - Gdx.input.getY();
 
@@ -95,9 +106,15 @@ public class Undoer implements BinSerializable {
                 && y >= undoArea.y && y <= undoArea.y + undoArea.height
                 && canUndo()) {
             undoLastMove();
-            return true;
+            return Action.Undo;
         }
-        return false;
+
+        // check if the pause icon was pressed
+        if (x >= pauseArea.x && x <= pauseArea.x + pauseArea.width
+                && y >= pauseArea.y && y <= pauseArea.y + pauseArea.height) {
+            return Action.Pause;
+        }
+        return Action.None;
     }
 
     private void undoLastMove() {

@@ -34,7 +34,7 @@ public class GameLayout {
     //region Members
 
     private float screenWidth, marginWidth, availableWidth;
-    private float screenHeight, logoHeight, scoreHeight, boardHeight, pieceHolderHeight, shopCardHeight;
+    private float screenHeight, logoHeight, scoreHeight, undoHeight, boardHeight, pieceHolderHeight, shopCardHeight;
 
     //endregion
 
@@ -57,8 +57,9 @@ public class GameLayout {
         availableWidth = screenWidth - marginWidth * 2f;
 
         // Heights
-        logoHeight = screenHeight * 0.10f;
-        scoreHeight = screenHeight * 0.15f;
+        logoHeight = screenHeight * 0.1f;
+        scoreHeight = screenHeight * 0.1f;
+        undoHeight = screenHeight * 0.05f;
         boardHeight = screenHeight * 0.50f;
         pieceHolderHeight = screenHeight * 0.25f;
 
@@ -77,7 +78,7 @@ public class GameLayout {
     void update(BaseScorer scorer) {
         float cupSize = Math.min(scoreHeight, scorer.cupTexture.getHeight());
         final Rectangle area = new Rectangle(
-                marginWidth, pieceHolderHeight + boardHeight,
+                marginWidth, pieceHolderHeight + boardHeight + undoHeight,
                 availableWidth, scoreHeight);
 
         scorer.cupArea.set(
@@ -86,10 +87,10 @@ public class GameLayout {
 
         scorer.currentScoreLabel.setBounds(
                 area.x, area.y,
-                area.width * 0.5f - cupSize * 0.5f, area.height);
+                area.width * 0.5f - cupSize * 0.6f, area.height);
 
         scorer.highScoreLabel.setBounds(
-                area.x + area.width * 0.5f + cupSize * 0.5f, area.y,
+                area.x + area.width * 0.5f + cupSize * 0.6f, area.y,
                 area.width * 0.5f - cupSize * 0.5f, area.height);
     }
 
@@ -146,15 +147,16 @@ public class GameLayout {
                 availableWidth - shopCardHeight, shopCardHeight);
     }
 
-    public void update(Undoer undo) {
-        float undoSize = undo.undoButton.getHeight() * 0.7f;
-        final Rectangle area = new Rectangle(
-                marginWidth, pieceHolderHeight + boardHeight,
-                availableWidth, undoSize);
+    public void update(Actions actions) {
+        float iconSize = Math.min(undoHeight, actions.undoButton.getHeight());
 
-        undo.undoArea.set(
-                area.x + area.width - undoSize, area.y,
-                undoSize, undoSize);
+        actions.undoArea.set(marginWidth + availableWidth - iconSize,
+                pieceHolderHeight + boardHeight,
+                iconSize, iconSize);
+
+        actions.pauseArea.set(marginWidth,
+                pieceHolderHeight + boardHeight,
+                iconSize, iconSize);
     }
 
     //endregion

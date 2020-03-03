@@ -39,7 +39,7 @@ import dev.lonami.klooni.game.Piece;
 import dev.lonami.klooni.game.PieceHolder;
 import dev.lonami.klooni.game.Scorer;
 import dev.lonami.klooni.game.TimeScorer;
-import dev.lonami.klooni.game.Undoer;
+import dev.lonami.klooni.game.Actions;
 import dev.lonami.klooni.serializer.BinSerializable;
 import dev.lonami.klooni.serializer.BinSerializer;
 
@@ -51,7 +51,7 @@ class GameScreen implements Screen, InputProcessor, BinSerializable {
     private final Klooni game;
     private final BaseScorer scorer;
     private final BonusParticleHandler bonusParticleHandler;
-    private final Undoer undo;
+    private final Actions actions;
 
     private final Board board;
     private final PieceHolder holder;
@@ -113,7 +113,7 @@ class GameScreen implements Screen, InputProcessor, BinSerializable {
 
         board = new Board(layout, BOARD_SIZE);
         holder = new PieceHolder(layout, board, HOLDER_PIECE_COUNT, board.cellSize);
-        undo = new Undoer(layout, board, holder, scorer);
+        actions = new Actions(layout, board, holder, scorer);
         pauseMenu = new PauseMenuStage(layout, game, scorer, gameMode);
         bonusParticleHandler = new BonusParticleHandler(game);
 
@@ -202,7 +202,7 @@ class GameScreen implements Screen, InputProcessor, BinSerializable {
         board.draw(batch);
         holder.update();
         holder.draw(batch);
-        undo.draw(batch);
+        actions.draw(batch);
         bonusParticleHandler.run(batch);
 
         batch.end();
@@ -232,7 +232,11 @@ class GameScreen implements Screen, InputProcessor, BinSerializable {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (undo.onPress()) {
+        Actions.Action action = actions.onPress();
+        if (action == Actions.Action.Pause) {
+            showPauseMenu();
+        }
+        if (action != Actions.Action.None) {
             return true;
         }
         return holder.pickPiece();
@@ -240,15 +244,15 @@ class GameScreen implements Screen, InputProcessor, BinSerializable {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        undo.recordState();
+        actions.recordState();
         PieceHolder.DropResult result = holder.dropPiece();
         if (!result.dropped) {
-            undo.discardLastState();
+            actions.discardLastState();
             return false;
         }
 
         if (!result.onBoard) {
-            undo.discardLastState();
+            actions.discardLastState();
         } else {
             scorer.addPieceScore(result.area);
             int bonus = scorer.addBoardScore(board.clearComplete(game.effect), board.cellCount);
@@ -370,7 +374,7 @@ class GameScreen implements Screen, InputProcessor, BinSerializable {
         board.write(out);
         holder.write(out);
         scorer.write(out);
-        undo.write(out);
+        actions.write(out);
     }
 
     @Override
@@ -382,7 +386,7 @@ class GameScreen implements Screen, InputProcessor, BinSerializable {
         board.read(in);
         holder.read(in);
         scorer.read(in);
-        undo.read(in);
+        actions.read(in);
     }
 
     //endregion
